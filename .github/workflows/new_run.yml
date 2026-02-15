@@ -43,20 +43,22 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
-          ./gradlew make makePluginsJson
+          # Menjalankan build dengan Gradle 8.7
+          ./gradlew make makePluginsJson --stacktrace
           
           mkdir -p $GITHUB_WORKSPACE/output_builds
           cp **/build/*.cs3 $GITHUB_WORKSPACE/output_builds/ || true
           cp build/plugins.json $GITHUB_WORKSPACE/output_builds/ || true
 
+          # Otomatis menyesuaikan link repo ke username Anda
           cat <<EOF > $GITHUB_WORKSPACE/output_builds/repo.json
           {
               "name": "WDK Repo",
-              "iconUrl": "https://github.com/michat88.png",
+              "iconUrl": "https://github.com/${{ github.repository_owner }}.png",
               "description": "Repository Plugin WDK",
               "manifestVersion": 1,
               "pluginLists": [
-                "https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/refs/heads/builds/plugins.json"
+                "https://raw.githubusercontent.com/${{ github.repository }}/refs/heads/builds/plugins.json"
               ]
           }
           EOF
