@@ -1,4 +1,4 @@
-name: Build (TEST)
+name: Build 
 
 concurrency:
   group: "build"
@@ -24,11 +24,11 @@ jobs:
         with:
           path: "src"
 
-      - name: Setup JDK 21
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'zulu'
+          java-version: '17'
+          distribution: 'temurin'
           cache: gradle
 
       - name: Setup Android SDK
@@ -43,18 +43,12 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
-          # Menjalankan build
-          ./gradlew make makePluginsJson --stacktrace
+          ./gradlew make makePluginsJson
           
-          # Buat folder output
           mkdir -p $GITHUB_WORKSPACE/output_builds
-          
-          # Copy plugin hasil build
           cp **/build/*.cs3 $GITHUB_WORKSPACE/output_builds/ || true
-          cp **/build/*.jar $GITHUB_WORKSPACE/output_builds/ || true
           cp build/plugins.json $GITHUB_WORKSPACE/output_builds/ || true
 
-          # MEMBUAT FILE repo.json SECARA OTOMATIS
           cat <<EOF > $GITHUB_WORKSPACE/output_builds/repo.json
           {
               "name": "WDK Repo",
@@ -62,7 +56,7 @@ jobs:
               "description": "Repository Plugin WDK",
               "manifestVersion": 1,
               "pluginLists": [
-                "https://raw.githubusercontent.com/nuyuls79/CloudLokal/refs/heads/builds/plugins.json"
+                "https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/refs/heads/builds/plugins.json"
               ]
           }
           EOF
