@@ -1,17 +1,15 @@
-name: Build (test)
+name: Build
 
-concurrency:
+# https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#concurrency
+concurrency: 
   group: "build"
   cancel-in-progress: true
-
-permissions:
-  contents: write
 
 on:
   push:
     branches:
+      # choose your default branch
       - master
-      - main
     paths-ignore:
       - '*.md'
 
@@ -19,61 +17,41 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@master
         with:
           path: "src"
 
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
+      - name: Checkout builds
+        uses: actions/checkout@master
         with:
-          java-version: 17
-          distribution: adopt
-          cache: gradle
+          ref: "builds"
+          path: "builds"
+      
+      - name: Clean old builds
+        run: rm $GITHUB_WORKSPACE/builds/*.cs3 || true
+
+      - name: Setup JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v2
 
-      - name: Create local.properties
-        run: |
-          cd $GITHUB_WORKSPACE/src
-          touch local.properties
-
-      - name: Build Plugins and Generate Repo Info
+      - name: Build Plugins
         run: |
           cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
           ./gradlew make makePluginsJson
-          ./gradlew ensureJarCompatibility
-          
-          # Buat folder output
-          mkdir -p $GITHUB_WORKSPACE/output_builds
-          
-          # Copy plugin dan plugins.json
-          cp **/build/*.cs3 $GITHUB_WORKSPACE/output_builds/ || true
-          cp **/build/*.jar $GITHUB_WORKSPACE/output_builds/ || true
-          cp build/plugins.json $GITHUB_WORKSPACE/output_builds/ || true
+          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
+          cp build/plugins.json $GITHUB_WORKSPACE/builds
 
-          # MEMBUAT FILE repo.json SECARA OTOMATIS
-          cat <<EOF > $GITHUB_WORKSPACE/output_builds/repo.json
-          {
-              "name": "WDK Repo",
-              "iconUrl": "https://github.com/michat88.png",
-              "description": "Repository Plugin WDK",
-              "manifestVersion": 1,
-              "pluginLists": [
-                "https://raw.githubusercontent.com/nuyuls79/Premix/refs/heads/builds/plugins.json"
-              ]
-          }
-          EOF
-
-      - name: Push to builds branch
+      - name: Push builds
         run: |
-          cd $GITHUB_WORKSPACE/output_builds
-          git init
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git checkout -b builds
+          cd $GITHUB_WORKSPACE/builds
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
           git add .
-          git commit -m "Build update: $GITHUB_SHA"
-          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git builds
+          git commit --amend -m "Build $GITHUB_SHA" || exit 0   # do not error if nothing to commit
+          git push --force
