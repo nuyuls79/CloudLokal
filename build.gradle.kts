@@ -11,8 +11,8 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.4.2") // Jangan diganti ke versi terbaru, karena ada masalah dengan versi terbaru
-        classpath("com.github.recloudstream:gradle:cce1b8d84d") // SHA commit stabil
+        classpath("com.android.tools.build:gradle:8.4.2") 
+        classpath("com.github.recloudstream:gradle:master-SNAPSHOT")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
     }
 }
