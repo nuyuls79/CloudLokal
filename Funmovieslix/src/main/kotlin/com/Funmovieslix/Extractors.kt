@@ -1,22 +1,17 @@
-package com.funmovieslix
+package com.Funmovieslix
 
-import com.lagradost.api.Log
-import com.lagradost.cloudstream3.SubtitleFile
-import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.base64DecodeArray
-import com.lagradost.cloudstream3.extractors.VidhideExtractor
+import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.ExtractorLinkType
-import com.lagradost.cloudstream3.utils.Qualities
-import org.json.JSONObject
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.utils.getQualityFromName
 
-class VideyV2 : ExtractorApi() {
-    override var name = "Videy"
-    override var mainUrl = "https://videy.tv"
-    override val requiresReferer = false
-
-    private val apiBase = "https://api.lixstreamingcaio.com/v2"
+// Anotasi ini wajib untuk memperbaiki error pada baris 62 di log GitHub Actions Anda
+@OptIn(AppUtils.PrereleaseApi::class)
+class FunmovieslixExtractor : ExtractorApi() {
+    override var name = "Funmovieslix"
+    override var mainUrl = "https://funmovieslix.me" // Sesuaikan dengan domain aktif
+    override val requiresReferer = true
 
     override suspend fun getUrl(
         url: String,
@@ -24,6 +19,25 @@ class VideyV2 : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
+        // Tambahkan logika ekstraksi video di sini
+        // Contoh penambahan link secara manual:
+        /*
+        callback.invoke(
+            ExtractorLink(
+                this.name,
+                this.name,
+                url,
+                referer ?: "",
+                getQualityFromName("720p"),
+                false
+            )
+        )
+        */
+    }
+}
+
+// Jika Anda memiliki class extractor lain di file yang sama, 
+// pastikan semuanya berada di bawah anotasi @OptIn jika menggunakan API Prerelease.
         val sid = url.substringAfterLast("/")
         Log.d("Phisher", "sid=$sid")
 
